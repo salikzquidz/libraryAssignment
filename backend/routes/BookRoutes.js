@@ -29,6 +29,7 @@ router.get("/", async (req, res) => {
 });
 
 router.post("/", upload.single("image"), async (req, res) => {
+  console.log(req.file);
   const { title, description } = req.body;
   const imagePath = req.file?.path;
   try {
@@ -62,6 +63,9 @@ router.put("/:id", upload.single("image"), async (req, res) => {
     }
 
     const updatedBook = await book.save();
+    console.log("heh");
+    console.log(updatedBook);
+    console.log(req.body);
 
     res.json(updatedBook);
   } catch (error) {
@@ -81,10 +85,9 @@ router.delete("/:id", async (req, res) => {
     }
 
     if (book.image) {
-      await fs.unlink(book.image);
+      fs.unlinkSync(book.image);
     }
-    const deletedBook = await Book.findByIdAndDelete();
-
+    const deletedBook = await Book.findByIdAndDelete(bookId);
     res.json(deletedBook);
   } catch (error) {
     console.error(error);

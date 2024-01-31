@@ -6,9 +6,9 @@ const User = require("../models/User");
 const router = express.Router();
 
 router.post("/register", async (req, res) => {
-  const { username, password } = req.body;
+  const { username, password, isAdmin } = req.body;
   try {
-    const newUser = new User({ username, password });
+    const newUser = new User({ username, password, isAdmin });
     await newUser.save();
 
     res.status(201).json({ message: "New User Created" });
@@ -41,11 +41,36 @@ router.post("/login", async (req, res) => {
       expiresIn: "1h",
     });
 
-    res.json({ token });
+    // set cookies
+    res.cookie("jwt", token, {
+      httpOnly: true,
+      maxAge: 60 * 60 * 12 * 1000,
+      // maxAge: 10000,
+    });
+
+    res.json({
+      userInfo: {
+        username: user.username,
+        isAdmin: user.isAdmin,
+      },
+    });
   } catch (error) {
     console.error(error);
 
     res.status(500).json({ message: "Internal Server Error" });
+  }
+});
+
+router.post("/logout", async (req, res) => {
+  try {
+    res.clearCookie("jwt");
+    res.clearCookie("username");
+    res.clearCookie("isAdmin");
+    console.log("cookie jwt cleared");
+    res.send({});
+  } catch (error) {
+    console.log(error);
+    res.send(error);
   }
 });
 
